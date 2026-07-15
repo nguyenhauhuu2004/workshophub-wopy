@@ -5,8 +5,7 @@ import {
   Plus, TrendingUp, Users, Star, DollarSign, Eye, Edit, Trash2,
   Calendar, ArrowUpRight, Search, Download, CheckCircle, XCircle,
   Clock, Phone, Mail, Package, MoreHorizontal, Bell, LogOut,
-  Sparkles, AlertCircle, RefreshCw, ChevronRight, Filter,
-  MapPin, MessageSquare, Printer,
+  Sparkles, AlertCircle, RefreshCw, ChevronRight, MessageSquare, Printer,
 } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -294,7 +293,6 @@ export function HostDashboardPage() {
   // Derived stats
   const totalEarnings  = HOST_WORKSHOPS.reduce((a, w) => a + w.earnings, 0);
   const pendingCount   = bookings.filter((b) => b.status === "pending").length;
-  const confirmedCount = bookings.filter((b) => b.status === "confirmed").length;
   const avgRating      = (HOST_WORKSHOPS.reduce((a, w) => a + w.rating, 0) / HOST_WORKSHOPS.length).toFixed(1);
 
   // Filter bookings
@@ -437,7 +435,10 @@ export function HostDashboardPage() {
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
                         <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
                         <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${v}`} width={46} />
-                        <Tooltip formatter={(v: number) => [`$${v.toLocaleString()}`, "Earnings"]}
+                        <Tooltip formatter={(value) => [
+                            `$${Number(value).toLocaleString()}`,
+                            "Earnings",
+                          ]}
                           contentStyle={{ borderRadius: 12, border: "none", boxShadow: "0 8px 30px rgba(0,0,0,0.1)", fontSize: 12 }} />
                         <Area type="monotone" dataKey="earnings" stroke="#7C3AED" strokeWidth={2.5}
                           fill="url(#g1)" dot={false} activeDot={{ r: 5, fill: "#7C3AED", strokeWidth: 0 }} />

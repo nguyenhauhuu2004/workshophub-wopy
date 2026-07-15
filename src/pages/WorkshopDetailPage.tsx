@@ -13,7 +13,7 @@ export function WorkshopDetailPage() {
   const [selectedSchedule, setSelectedSchedule] = useState(0);
   const [guests, setGuests] = useState(1);
 
-  const workshop = WORKSHOPS.find((w) => w.id === Number(id));
+  const workshop = WORKSHOPS.find((w) => w.id === Number(id))!;
 
   if (!workshop) {
     return (

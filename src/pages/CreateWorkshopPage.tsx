@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, useNavigate, Link } from "react-router";
+import { useParams, Link } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import { ArrowLeft, ArrowRight, Check, Plus, X, Clock, DollarSign, Users, MapPin, BookOpen, Calendar, Eye } from "lucide-react";
 import { WORKSHOPS, CATEGORIES } from "../data";
@@ -21,7 +21,6 @@ interface Schedule { date: string; time: string; spotsLeft: number }
 
 export function CreateWorkshopPage() {
   const { id } = useParams();
-  const navigate = useNavigate();
   const isEdit = Boolean(id);
   const existing = id ? WORKSHOPS.find((w) => w.id === Number(id)) : undefined;
 
