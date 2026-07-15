@@ -18,7 +18,7 @@ export function PaymentPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { addBooking } = useApp();
-  const state = location.state as PayState | null;
+  const state = location.state as PayState;
 
   const [method, setMethod] = useState<"card" | "wallet">("card");
   const [card, setCard] = useState({ number: "", expiry: "", cvv: "", name: "" });
