@@ -1,0 +1,293 @@
+import { useState } from "react";
+import { Link, useNavigate } from "react-router";
+import { motion, AnimatePresence } from "motion/react";
+import { Plus, TrendingUp, Users, Star, DollarSign, Eye, Edit, Trash2, BarChart2, Calendar, ArrowUpRight } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { useApp } from "../contexts/AppContext";
+import { HOST_WORKSHOPS } from "../data";
+
+const earningsData = [
+  { month: "Jan", earnings: 1200 },
+  { month: "Feb", earnings: 1800 },
+  { month: "Mar", earnings: 2400 },
+  { month: "Apr", earnings: 1900 },
+  { month: "May", earnings: 3200 },
+  { month: "Jun", earnings: 2800 },
+  { month: "Jul", earnings: 4100 },
+];
+
+const recentBookings = [
+  { id: "r1", name: "Emma Chen", workshop: "Japanese Ikebana", date: "Jul 20", amount: 89, avatar: "E" },
+  { id: "r2", name: "Lucas Martin", workshop: "Oil Painting Basics", date: "Jul 22", amount: 129, avatar: "L" },
+  { id: "r3", name: "Sofia Rodriguez", workshop: "Japanese Ikebana", date: "Jul 25", amount: 89, avatar: "S" },
+  { id: "r4", name: "James Liu", workshop: "Film Photography", date: "Jul 28", amount: 149, avatar: "J" },
+];
+
+export function HostDashboardPage() {
+  const { user, logout } = useApp();
+  const navigate = useNavigate();
+  const [tab, setTab] = useState<"overview" | "workshops" | "bookings" | "analytics">("overview");
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center pt-16">
+        <div className="text-center">
+          <p className="text-5xl mb-4">🔐</p>
+          <h2 className="text-2xl font-bold text-[#0D0D1A] mb-4">Sign in to access Host Dashboard</h2>
+          <Link to="/login?mode=host"><button className="bg-[#7C3AED] text-white font-bold px-8 py-3 rounded-full">Sign In as Host</button></Link>
+        </div>
+      </div>
+    );
+  }
+
+  const totalEarnings = HOST_WORKSHOPS.reduce((a, w) => a + w.earnings, 0);
+  const totalBookings = HOST_WORKSHOPS.reduce((a, w) => a + w.totalBookings, 0);
+  const avgRating = (HOST_WORKSHOPS.reduce((a, w) => a + w.rating, 0) / HOST_WORKSHOPS.length).toFixed(1);
+
+  const stats = [
+    { icon: <DollarSign size={20} className="text-emerald-600" />, label: "Total Earnings", value: `$${totalEarnings.toLocaleString()}`, bg: "bg-emerald-50", change: "+18%" },
+    { icon: <Users size={20} className="text-blue-600" />, label: "Total Students", value: totalBookings.toString(), bg: "bg-blue-50", change: "+12%" },
+    { icon: <Star size={20} className="text-amber-500" />, label: "Average Rating", value: avgRating, bg: "bg-amber-50", change: "Top 5%" },
+    { icon: <BarChart2 size={20} className="text-violet-600" />, label: "Published Workshops", value: HOST_WORKSHOPS.filter((w) => w.status === "published").length.toString(), bg: "bg-violet-50", change: "of " + HOST_WORKSHOPS.length + " total" },
+  ];
+
+  return (
+    <div className="min-h-screen bg-[#FAFAF7] pt-16">
+      {/* Header */}
+      <div className="bg-[#0D0D1A] relative overflow-hidden">
+        <div className="absolute inset-0">
+          <div className="absolute top-0 right-0 w-80 h-80 rounded-full bg-violet-900/30 blur-3xl" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full bg-fuchsia-900/20 blur-3xl" />
+        </div>
+        <div className="max-w-6xl mx-auto px-6 py-10 relative z-10">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <p className="text-gray-400 text-sm mb-1">Welcome back,</p>
+              <h1 className="text-3xl font-black text-white" style={{ fontFamily: "var(--font-display)" }}>{user.name}</h1>
+            </div>
+            <Link to="/host/create">
+              <motion.button whileHover={{ scale: 1.03, boxShadow: "0 12px 40px rgba(124,58,237,0.5)" }} whileTap={{ scale: 0.97 }}
+                className="flex items-center gap-2 bg-[#7C3AED] text-white font-bold px-5 py-3 rounded-2xl shadow-lg shadow-violet-900/40">
+                <Plus size={18} /> New Workshop
+              </motion.button>
+            </Link>
+          </div>
+
+          {/* Tabs */}
+          <div className="flex gap-1 overflow-x-auto scrollbar-none">
+            {[["overview", "Overview"], ["workshops", "My Workshops"], ["bookings", "Recent Bookings"], ["analytics", "Analytics"]].map(([id, label]) => (
+              <button key={id} onClick={() => setTab(id as typeof tab)}
+                className={`px-5 py-2.5 text-sm font-semibold rounded-xl whitespace-nowrap transition-all ${tab === id ? "bg-white/10 text-white" : "text-gray-400 hover:text-gray-200"}`}>
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-6xl mx-auto px-6 py-10">
+        <AnimatePresence mode="wait">
+          <motion.div key={tab} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+
+            {tab === "overview" && (
+              <div className="space-y-8">
+                {/* Stats grid */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+                  {stats.map((s, i) => (
+                    <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
+                      whileHover={{ y: -4 }}
+                      className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5">
+                      <div className={`w-10 h-10 rounded-2xl ${s.bg} flex items-center justify-center mb-3`}>{s.icon}</div>
+                      <p className="text-gray-400 text-xs font-medium mb-1">{s.label}</p>
+                      <p className="text-2xl font-black text-[#0D0D1A]">{s.value}</p>
+                      <p className="text-xs text-emerald-600 font-semibold mt-1 flex items-center gap-1"><ArrowUpRight size={11} />{s.change}</p>
+                    </motion.div>
+                  ))}
+                </div>
+
+                {/* Quick chart */}
+                <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6">
+                  <h3 className="font-bold text-[#0D0D1A] text-base mb-6">Monthly Earnings</h3>
+                  <ResponsiveContainer width="100%" height={200}>
+                    <BarChart data={earningsData} barSize={24}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                      <XAxis dataKey="month" tick={{ fontSize: 12, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fontSize: 12, fill: "#9ca3af" }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${v}`} />
+                      <Tooltip formatter={(v) => [`$${v}`, "Earnings"]} contentStyle={{ borderRadius: 12, border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.1)" }} />
+                      <Bar dataKey="earnings" fill="#7C3AED" radius={[8, 8, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Recent bookings */}
+                <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6">
+                  <div className="flex items-center justify-between mb-5">
+                    <h3 className="font-bold text-[#0D0D1A] text-base">Recent Bookings</h3>
+                    <button onClick={() => setTab("bookings")} className="text-sm text-[#7C3AED] font-semibold hover:underline">View all</button>
+                  </div>
+                  <div className="space-y-3">
+                    {recentBookings.slice(0, 3).map((b) => (
+                      <div key={b.id} className="flex items-center gap-4 p-3 rounded-2xl hover:bg-gray-50 transition-colors">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shrink-0">{b.avatar}</div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-[#0D0D1A] text-sm">{b.name}</p>
+                          <p className="text-gray-400 text-xs truncate">{b.workshop} · {b.date}</p>
+                        </div>
+                        <p className="font-bold text-[#7C3AED]">${b.amount}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {tab === "workshops" && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-black text-[#0D0D1A]" style={{ fontFamily: "var(--font-display)" }}>My Workshops</h2>
+                  <Link to="/host/create"><button className="flex items-center gap-2 bg-[#7C3AED] text-white font-semibold px-4 py-2.5 rounded-2xl text-sm"><Plus size={16} />New</button></Link>
+                </div>
+                {HOST_WORKSHOPS.map((w, i) => (
+                  <motion.div key={w.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
+                    whileHover={{ y: -2 }}
+                    className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5 flex items-center gap-5">
+                    <div className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${w.gradient} shrink-0 relative overflow-hidden`}>
+                      <div className="absolute -right-3 -top-3 w-10 h-10 rounded-full bg-white/10 blur-sm" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start gap-2 mb-1">
+                        <h3 className="font-bold text-[#0D0D1A] text-base leading-snug">{w.title}</h3>
+                        <span className={`shrink-0 text-xs font-bold px-2.5 py-1 rounded-full ${w.status === "published" ? "bg-emerald-100 text-emerald-700" : w.status === "draft" ? "bg-gray-100 text-gray-500" : "bg-amber-100 text-amber-700"}`}>
+                          {w.status}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-4 text-sm text-gray-400">
+                        <span className="flex items-center gap-1"><Users size={13} />{w.totalBookings} bookings</span>
+                        <span className="flex items-center gap-1"><DollarSign size={13} />${w.earnings.toLocaleString()}</span>
+                        <span className="flex items-center gap-1"><Star size={13} className="text-amber-400 fill-amber-400" />{w.rating}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Link to={`/workshop/${w.id}`}>
+                        <motion.button whileHover={{ scale: 1.05 }} className="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center text-gray-400 hover:border-violet-300 hover:text-violet-600 transition-colors">
+                          <Eye size={15} />
+                        </motion.button>
+                      </Link>
+                      <Link to={`/host/edit/${w.id}`}>
+                        <motion.button whileHover={{ scale: 1.05 }} className="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center text-gray-400 hover:border-blue-300 hover:text-blue-600 transition-colors">
+                          <Edit size={15} />
+                        </motion.button>
+                      </Link>
+                      <motion.button onClick={() => setDeletingId(w.id)} whileHover={{ scale: 1.05 }}
+                        className="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center text-gray-400 hover:border-red-300 hover:text-red-500 transition-colors">
+                        <Trash2 size={15} />
+                      </motion.button>
+                    </div>
+                  </motion.div>
+                ))}
+
+                {/* Delete confirm modal */}
+                <AnimatePresence>
+                  {deletingId !== null && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                      onClick={() => setDeletingId(null)}>
+                      <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+                        onClick={(e) => e.stopPropagation()}
+                        className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl">
+                        <h3 className="font-black text-[#0D0D1A] text-lg mb-2">Delete Workshop?</h3>
+                        <p className="text-gray-400 text-sm mb-6">This action cannot be undone. All bookings for this workshop will be cancelled.</p>
+                        <div className="flex gap-3">
+                          <button onClick={() => setDeletingId(null)} className="flex-1 border border-gray-200 text-gray-600 font-semibold py-2.5 rounded-2xl">Cancel</button>
+                          <button onClick={() => setDeletingId(null)} className="flex-1 bg-red-500 text-white font-bold py-2.5 rounded-2xl">Delete</button>
+                        </div>
+                      </motion.div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
+
+            {tab === "bookings" && (
+              <div>
+                <h2 className="text-xl font-black text-[#0D0D1A] mb-6" style={{ fontFamily: "var(--font-display)" }}>Recent Bookings</h2>
+                <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+                  <table className="w-full">
+                    <thead className="bg-gray-50 border-b border-gray-100">
+                      <tr>
+                        {["Student", "Workshop", "Date", "Amount", "Status"].map((h) => (
+                          <th key={h} className="text-left px-5 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      {recentBookings.map((b) => (
+                        <motion.tr key={b.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} whileHover={{ backgroundColor: "#fafaf7" }}>
+                          <td className="px-5 py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">{b.avatar}</div>
+                              <span className="font-semibold text-[#0D0D1A] text-sm">{b.name}</span>
+                            </div>
+                          </td>
+                          <td className="px-5 py-4 text-sm text-gray-600">{b.workshop}</td>
+                          <td className="px-5 py-4 text-sm text-gray-400 flex items-center gap-1.5 mt-3"><Calendar size={13} />{b.date}</td>
+                          <td className="px-5 py-4 font-bold text-[#7C3AED]">${b.amount}</td>
+                          <td className="px-5 py-4"><span className="bg-emerald-100 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full">Confirmed</span></td>
+                        </motion.tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {tab === "analytics" && (
+              <div className="space-y-6">
+                <h2 className="text-xl font-black text-[#0D0D1A]" style={{ fontFamily: "var(--font-display)" }}>Analytics</h2>
+                <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="font-bold text-[#0D0D1A]">Earnings Over Time</h3>
+                    <span className="text-xs text-gray-400 bg-gray-100 px-3 py-1.5 rounded-full">Last 7 months</span>
+                  </div>
+                  <ResponsiveContainer width="100%" height={280}>
+                    <BarChart data={earningsData} barSize={32}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                      <XAxis dataKey="month" tick={{ fontSize: 12, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fontSize: 12, fill: "#9ca3af" }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${v}`} />
+                      <Tooltip formatter={(v) => [`$${v}`, "Earnings"]} contentStyle={{ borderRadius: 12, border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.1)", fontFamily: "var(--font-body)" }} />
+                      <Bar dataKey="earnings" fill="url(#barGrad)" radius={[8, 8, 0, 0]} />
+                      <defs>
+                        <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#7C3AED" />
+                          <stop offset="100%" stopColor="#a855f7" />
+                        </linearGradient>
+                      </defs>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                  {[
+                    { label: "Profile Views", value: "1,247", change: "+23% this month", icon: <Eye size={18} className="text-blue-500" />, bg: "bg-blue-50" },
+                    { label: "Conversion Rate", value: "6.8%", change: "+1.2% this month", icon: <TrendingUp size={18} className="text-emerald-500" />, bg: "bg-emerald-50" },
+                    { label: "Repeat Students", value: "38%", change: "Above average", icon: <Users size={18} className="text-violet-500" />, bg: "bg-violet-50" },
+                  ].map((s, i) => (
+                    <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
+                      className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5">
+                      <div className={`w-10 h-10 rounded-2xl ${s.bg} flex items-center justify-center mb-3`}>{s.icon}</div>
+                      <p className="text-2xl font-black text-[#0D0D1A] mb-1">{s.value}</p>
+                      <p className="text-gray-400 text-xs font-medium">{s.label}</p>
+                      <p className="text-emerald-600 text-xs font-semibold mt-1">{s.change}</p>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}
