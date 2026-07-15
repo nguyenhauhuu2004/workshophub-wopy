@@ -476,7 +476,10 @@ function HostSection() {
               <ResponsiveContainer width="100%" height={160}>
                 <BarChart data={EARNINGS_DATA} barSize={28}>
                   <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={{ borderRadius: 12, border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.1)", fontSize: 12 }} formatter={(v: number) => [`$${v.toLocaleString()}`, "Earnings"]} />
+                  <Tooltip contentStyle={{ borderRadius: 12, border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.1)", fontSize: 12 }} formatter={(value) => [
+    `$${Number(value ?? 0).toLocaleString()}`,
+    "Earnings",
+  ]} />
                   <Bar dataKey="amount" fill="#7C3AED" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>

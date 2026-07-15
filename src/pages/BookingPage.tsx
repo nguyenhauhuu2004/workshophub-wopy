@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useParams, useLocation, useNavigate, Link } from "react-router";
 import { motion } from "motion/react";
-import { ArrowLeft, Star, Clock, MapPin, ChevronRight, Users } from "lucide-react";
+import { ArrowLeft, Star, Clock, ChevronRight, Users } from "lucide-react";
 import { WORKSHOPS } from "../data";
 import { useApp } from "../contexts/AppContext";
 
@@ -18,7 +18,7 @@ export function BookingPage() {
   const { user } = useApp();
   const state = location.state as BookingState | null;
 
-  const workshop = WORKSHOPS.find((w) => w.id === Number(id));
+  const workshop = WORKSHOPS.find((w) => w.id === Number(id))!;
 
   const [form, setForm] = useState({
     firstName: user?.name.split(" ")[0] || "",
