@@ -223,8 +223,11 @@ export function CreateWorkshopPage() {
                   </div>
                   <div>
                     <label className="label-style"><BookOpen size={13} className="inline mr-1" />Level</label>
-                    <select value={form.level} onChange={(e) => setField("level", e.target.value)} className="input-style w-full">
-                      {["Beginner", "Intermediate", "Advanced", "All Levels"].map((l) => (
+                  <select
+                    value={form.level}
+                    onChange={(e) => setField("level", e.target.value as typeof form.level)}
+                    className="input-style w-full"
+                  >                      {["Beginner", "Intermediate", "Advanced", "All Levels"].map((l) => (
                         <option key={l}>{l}</option>
                       ))}
                     </select>
